@@ -1,0 +1,97 @@
+{% extends "base.html" %} {% block main %}
+<div>
+
+  <div class="flex flex-wrap gap-4 m-10">
+    {% for contest in current_contests %}
+    <div class="card w-96 bg-primary text-primary-content">
+      <div class="card-body">
+        <h2 class="card-title">{{ contest.name }}</h2>
+        <p>Start Time: {{ contest.start_date }}<br>End Time: {{ contest.end_date }}</p>
+        <div class="card-actions justify-between">
+          <button class="btn" onclick="showModal('{{ contest.id }}')">Show Details</button>
+          <a href="{% url 'contest' contest.id %}">
+          <button class="btn">View Contest</button>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="relative overflow-x-auto shadow-md sm:rounded-lg mx-5 my-10 hidden">
+    <table
+      class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+    >
+      <thead
+        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
+      >
+        <tr>
+          <th scope="col" class="px-6 py-3">Contest Name</th>
+          <th scope="col" class="px-6 py-3">Description</th>
+          <th scope="col" class="px-6 py-3">Start Date</th>
+          <th scope="col" class="px-6 py-3">End Date</th>
+          <th scope="col" class="px-6 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contest in current_contests %}
+        <tr class="bg-white dark:bg-gray-800">
+          <th
+            scope="row"
+            class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+          >
+            {{ contest.name }}
+          </th>
+
+          <td class="px-6 py-4">
+            <button class="btn" onclick="showModal('{{ contest.id }}')">
+              Show Description
+            </button>
+          </td>
+          <td class="px-6 py-4">{{ contest.start_date}}</td>
+          <td class="px-6 py-4">{{ contest.end_date}}</td>
+          <td class="px-6 py-4">
+            <a href="{% url 'contest' contest.id %}">
+              <button class="btn btn-primary">View Contest</button>
+            </a>
+          </td>
+
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal Dialog -->
+  {% for contest in current_contests %}
+  <dialog id="my_modal_{{ contest.id }}" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">Description</h3>
+      <p class="py-4">{{ contest.description }}</p>
+      <h3 class="font-bold text-lg">Rules</h3>
+      <p class="py-4">{{ contest.rules }}</p>
+      <h3 class="font-bold text-lg">Prizes</h3>
+      <p class="py-4">{{ contest.prizes }}</p>
+      <div class="modal-action">
+        <form method="dialog">
+          <button class="btn" onclick="closeModal('{{ contest.id }}')">
+            Close
+          </button>
+        </form>
+      </div>
+    </div>
+  </dialog>
+  <script>
+    function showModal(contestId) {
+      var modal = document.getElementById("my_modal_" + contestId);
+      modal.showModal();
+    }
+
+    function closeModal(contestId) {
+      var modal = document.getElementById("my_modal_" + contestId);
+      modal.close();
+    }
+  </script>
+  {% endfor %}
+</div>
+{% endblock main %}

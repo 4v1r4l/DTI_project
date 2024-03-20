@@ -1,0 +1,338 @@
+{% extends "base.html" %} {% block main %}
+<div>
+  <div class=" m-2">
+    <span class="flex">
+      <div class="flex justify-center w-full">
+      <div class="grid grid-flow-col gap-5 text-center auto-cols-max">
+        <div class="flex flex-col p-2 bg-neutral rounded-box text-neutral-content">
+          <span class="countdown font-mono text-5xl">
+            <span style="--value:0;"></span>
+          </span>
+          days
+        </div> 
+        <div class="flex flex-col p-2 bg-neutral rounded-box text-neutral-content">
+          <span class="countdown font-mono text-5xl">
+            <span style="--value:0;"></span>
+          </span>
+          hours
+        </div> 
+        <div class="flex flex-col p-2 bg-neutral rounded-box text-neutral-content">
+          <span class="countdown font-mono text-5xl">
+            <span style="--value:0;"></span>
+          </span>
+          min
+        </div> 
+        <div class="flex flex-col p-2 bg-neutral rounded-box text-neutral-content">
+          <span class="countdown font-mono text-5xl">
+            <span style="--value:0;"></span>
+          </span>
+          sec
+        </div>
+      </div>
+      </div>
+      <div class="justify-self-end">
+        <form method="POST" action="{% url 'end-contest' contest.id %}">
+          {% csrf_token %}
+          <button class="btn btn-error">End Contest</button>
+        </form>
+      </div>
+    </span>
+    <h3 class="font-bold mt-2 text-lg">{{ problem.name }}</h3>
+    <p>{{ problem.description }}</p>
+
+    <button class="btn btn-primary" onclick="showModal()">Test Cases</button>
+    <dialog id="my_modal_5" class="modal modal-bottom sm:modal-middle">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Test Cases</h3>
+        <p class="py-4">Sample Input: {{ problem.sample_input }}</p>
+        <p class="py-4">Sample output: {{ problem.sample_output }}</p>
+        <div class="modal-action">
+          <form method="dialog">
+            <button class="btn" onclick="closeModal()">Close</button>
+          </form>
+        </div>
+      </div>
+    </dialog>
+    <script>
+      function showModal() {
+        var modal = document.getElementById("my_modal_5");
+        modal.showModal();
+      }
+
+      function closeModal() {
+        var modal = document.getElementById("my_modal_5");
+        modal.close();
+      }
+      var end_time = new Date("{{ end_time }}").getTime();
+      console.log(end_time);
+      var days, hours, minutes, seconds;
+      var countdown = document.getElementsByClassName("countdown");
+
+      setInterval(function() {
+        var now = new Date().getTime();
+        var distance = end_time - now;
+
+        days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        hours = Math.floor(
+          (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        countdown[0].children[0].style.setProperty("--value", days);
+        countdown[1].children[0].style.setProperty("--value", hours);
+        countdown[2].children[0].style.setProperty("--value", minutes);
+        countdown[3].children[0].style.setProperty("--value", seconds);
+      }, 1000);
+    
+    </script>
+  </div>
+  <div class="form-control w-full max-w-xs">
+    <label class="label">
+      <span class="label-text">Language</span>
+    </label>
+    <select class="select select-bordered" id="lang_selector">
+      <option>Python</option>
+      <option>Javascript</option>
+      <option>Java</option>
+      <option>C++</option>
+      <option>Rust</option>
+    </select>
+  </div>
+  <div class="flex">
+    <div class="border rounded p-2 m-2">
+      <div id="editor"></div>
+    </div>
+
+    <div class="border rounded p-2 m-2">
+      <div id="editor2"></div>
+    </div>
+  </div>
+
+  <div class="my-5">
+    <p>STD INPUT</p>
+    {% comment %} <textarea
+      class="form-control"
+      id="stdinput"
+      rows="3"
+      placeholder="Input"
+    ></textarea> {% endcomment %}
+  </div>
+
+  <button class="btn btn-primary" onclick="run_code.showModal()">Run Code</button>
+  <button class="btn btn-primary" id="submit_btn">Submit Code</button>
+
+
+  <dialog id="run_code" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box">
+      <div class="font-bold text-lg flex justify-between">
+        <span>Run Code</span>
+        <form method="dialog">
+          <button class="btn btn-error text-xs leading-none">✖</button>
+        </form>
+      </div>
+      <div class="form-control">
+        <label class="label cursor-pointer justify-start">
+          <span class="label-text">Want to add custom input?</span> 
+          <input type="checkbox" class="form-control checkbox checkbox-primary mx-5" id="custom_input"/>
+        </label>
+      </div>
+      {% comment %} Want to add custom input to your code? {% endcomment %}
+      {% comment %} <input type="checkbox" checked="checked" class="checkbox" /> {% endcomment %}
+      {% comment %} <input type="checkbox" id="custom_input" class="checkbox checkbox-primary"/> {% endcomment %}
+      <div id="custom_input_div" class="hidden">
+        <textarea
+          class="form-control textarea textarea-bordered"
+          id="stdinput"
+          rows="3"
+          placeholder="Input"
+        ></textarea>
+      </div>
+      <div class="modal-action">
+          <button class="btn" id="run_btn">Run Code</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="output_modal" class="modal modal-bottom sm:modal-middle ">
+    <div class="modal-box border border-2 border-primary">
+      <div class="font-bold text-lg flex justify-between">
+        <span>Output</span>
+        <form method="dialog">
+          <button class="btn btn-error text-xs leading-none">✖</button>
+        </form>
+      </div>
+      <div id="output_result">
+
+      </div>
+    </div>
+  </dialog>
+
+</div>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.min.js"
+  integrity="sha512-B4skI5FiLurS86aioJx9VfozI1wjqrn6aTdJH+YQUmCZum/ZibPBTX55k5d9XM6EsKePDInkLVrN7vPmJxc1qA=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+></script>
+<script>
+  var editor = ace.edit("editor");
+  var editor2 = ace.edit("editor2");
+  var l_selector = document.getElementById("lang_selector");
+  var custom_input = document.getElementById("custom_input");
+  editor.setTheme("ace/theme/monokai");
+  editor2.setTheme("ace/theme/monokai");
+
+  editor2.setReadOnly(true)
+
+  editor.getSession().setMode("ace/mode/python");
+
+  custom_input.addEventListener("change", function() {
+      var custom_input_div = document.getElementById("custom_input_div");
+      if (custom_input.checked) {
+          custom_input_div.classList.remove("hidden");
+      } else {
+          custom_input_div.classList.add("hidden");
+      }
+  });
+
+  var run_btn = document.getElementById("run_btn");
+  run_btn.addEventListener("click", function() {
+      run_code.close();
+      output_modal.showModal();
+      var code = editor.getValue();
+      var output = document.getElementById("output_result");
+      var stdinput = document.getElementById("stdinput").value;
+      var language = document.getElementById("lang_selector").value;
+      output.classList.toggle("loading");
+      output.classList.toggle("loading-infinity");
+      output.classList.toggle("loading-lg");
+      FormData = {
+          "source_code": code,
+          "stdinput": stdinput,
+          "language": language,          
+      }
+      var response = fetch("./", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}"
+          },
+          body: JSON.stringify(FormData),
+      }).then(function(response) {
+          return response.json();
+      }).then(function(data) {
+          console.log(data.output);
+          output.classList.toggle("loading");
+          output.classList.toggle("loading-infinity");
+          output.classList.toggle("loading-lg");
+          output.innerHTML = data.output.replace(/\n/g, "<br />");
+      });
+  });
+
+  var submit_btn = document.getElementById("submit_btn");
+  submit_btn.addEventListener("click", function() {
+      output_modal.showModal();
+      var code = editor.getValue();
+      var output = document.getElementById("output_result");
+      output.classList.toggle("loading");
+      output.classList.toggle("loading-infinity");
+      output.classList.toggle("loading-lg");
+      var stdinput = document.getElementById("stdinput").value;
+      var language = document.getElementById("lang_selector").value;
+      FormData = {
+          "source_code": code,
+          "stdinput": stdinput,
+          "language": language,
+      }
+      var response = fetch("./submit/", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}"
+          },
+          body: JSON.stringify(FormData),
+      }).then(function(response) {
+          return response.json();
+      }).then(function(data) {
+          console.log(data.output);
+          output.classList.toggle("loading");
+          output.classList.toggle("loading-infinity");
+          output.classList.toggle("loading-lg");
+          output.innerHTML = data.output.replace(/\n/g, "<br />");
+      });
+  });
+
+  var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+  var ws_path = ws_scheme + '://' + window.location.host + "/ws/chat/{{ contest.id }}/";
+
+  var socket = new ReconnectingWebSocket(ws_path);
+
+  socket.onopen = function() {
+      console.log("Connected to chat socket");
+  };
+
+  socket.onmessage = function(message) {
+      var data = JSON.parse(message["data"]);
+      if (data['player_number']!={{ player_number }}){
+          editor2.setValue(data['code']);
+      }
+  };
+
+  function sendCodeToSocket() {
+    var code = editor.getValue();
+    if (socket.readyState == WebSocket.OPEN) {
+      socket.send(JSON.stringify({
+        "code": code
+      }));
+    }
+  }
+
+  var debouncedSendCodeToSocket = _.debounce(sendCodeToSocket, 500);
+
+  editor.on("change", function() {
+    debouncedSendCodeToSocket();
+  });
+
+  l_selector.addEventListener("change", function() {
+      var lang = l_selector.value;
+      if (lang == "Python") {
+          editor.getSession().setMode("ace/mode/python");
+      } else if (lang == "Javascript") {
+          editor.getSession().setMode("ace/mode/javascript");
+      } else if (lang == "Java") {
+          editor.getSession().setMode("ace/mode/java");
+      } else if (lang == "C++") {
+          editor.getSession().setMode("ace/mode/c_cpp");
+      } else if (lang == "Rust") {
+          editor.getSession().setMode("ace/mode/rust");
+      }
+  });
+</script>
+<style>
+  #editor {
+    position: relative;
+    width: 750px;
+    height: 400px;
+  }
+
+  #editor2 {
+    position: relative;
+    width: 500px;
+    height: 400px;
+    -webkit-filter: blur(5px);
+    -moz-filter: blur(5px);
+    -o-filter: blur(5px);
+    -ms-filter: blur(5px);
+    filter: blur(5px);
+    pointer-events: none;
+  }
+
+  /* Added style for borders */
+  .border {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px;
+  }
+</style>
+{% endblock main %}
